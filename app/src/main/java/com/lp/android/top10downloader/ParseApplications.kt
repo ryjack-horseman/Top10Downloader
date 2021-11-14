@@ -8,7 +8,7 @@ import java.lang.Exception
 private const val TAG = "ParseApplications"
 class ParseApplications {
 
-    private val applications = ArrayList<FeedEntry>()
+    val applications = ArrayList<FeedEntry>()
 
     fun parse(xmlData: String): Boolean {
         Log.d(TAG, "parse called with $xmlData")
