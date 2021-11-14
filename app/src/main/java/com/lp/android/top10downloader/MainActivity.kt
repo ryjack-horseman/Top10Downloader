@@ -6,9 +6,10 @@ import android.os.Bundle
 import android.util.Log
 import java.net.URL
 
+private const val TAG = "MainActivity"
+
 class MainActivity : AppCompatActivity() {
 
-    private val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,8 +21,9 @@ class MainActivity : AppCompatActivity() {
 
     }
     companion object {
+        private const val TAG = "DownloadData"
         private class DownloadData : AsyncTask<String, Void, String>() {
-            private val TAG = "DownloadData"
+
             override fun doInBackground(vararg URL: String?): String {
                 Log.d(TAG, "onInBackground: starts with ${URL[0]}")
                 val rssFeed = downloadXML(URL[0])
