@@ -7,7 +7,7 @@ import java.lang.Exception
 
 class ParseApplications {
     private val TAG = "ParseApplications"
-    val applications = ArrayList<FeedEntry>()
+    private val applications = ArrayList<FeedEntry>()
 
     fun parse(xmlData: String): Boolean {
         Log.d(TAG, "parse called with $xmlData")
@@ -26,7 +26,7 @@ class ParseApplications {
                 val tagName = xpp.name.lowercase() //safe call operator here is probably no longer needed with new Kotlin method
                 when(eventType){
                     XmlPullParser.START_TAG -> {
-                        Log.d(TAG, "parse: Starting tag for " + tagName)
+                        Log.d(TAG, "parse: Starting tag for $tagName")
                         if(tagName == "entry"){
                             inEntry = true
                         }
@@ -34,7 +34,7 @@ class ParseApplications {
                     XmlPullParser.TEXT -> textValue = xpp.text
 
                     XmlPullParser.END_TAG -> {
-                        Log.d(TAG, "parse: Ending tag for " + tagName)
+                        Log.d(TAG, "parse: Ending tag for $tagName")
                         if(inEntry){
                             when(tagName){
                                 "entry" -> {
