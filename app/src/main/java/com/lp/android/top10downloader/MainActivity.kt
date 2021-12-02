@@ -1,5 +1,6 @@
 package com.lp.android.top10downloader
 
+import FeedAdapter
 import android.content.Context
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
@@ -11,19 +12,24 @@ import android.widget.ListView
 import java.net.URL
 import kotlin.properties.Delegates
 
-private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
+    private val TAG = "MainActivity"
+    private val downloadData by lazy {DownloadData(this, xmlListView) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         Log.d(TAG, "onCreate called")
-        val downloadData = DownloadData(this, xmlListView)
         downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=25/xml")
         Log.d(TAG, "onCreate: done")
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        downloadData.cancel(true)
     }
     companion object {
         private const val TAG = "DownloadData"
@@ -50,8 +56,11 @@ class MainActivity : AppCompatActivity() {
                 val parseApplications = ParseApplications()
                 parseApplications.parse(result)
 
-                val arrayAdapter = ArrayAdapter(ctx, R.layout.list_item, parseApplications.applications)
-                view.adapter = arrayAdapter
+                //val arrayAdapter = ArrayAdapter(ctx, R.layout.list_item, parseApplications.applications)
+               // view.adapter = arrayAdapter
+
+                val feedAdapter = FeedAdapter(ctx, R.layout.list_record, parseApplications.applications)
+                view.adapter = feedAdapter
             }
 
             private fun downloadXML(urlPath: String?): String{
