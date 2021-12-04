@@ -21,14 +21,21 @@ class MainActivity : AppCompatActivity() {
     private var feedUrl: String = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/%s/limit=%d/xml"
     private var currList: String = "topfreeapplications"
     private var feedLimit = 10
+    private val CURR_LIST = "curr_list"
+    private val FEED_LIMIT = "feed_limit"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        downloadUrl(feedUrl.format(currList,feedLimit))
-        Log.d(TAG, "onCreate: done")
 
+        //Log.d(TAG, "onCreate: done")
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        downloadUrl(feedUrl.format(currList,feedLimit))
     }
 
     private fun downloadUrl(feedUrl: String){
@@ -49,16 +56,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        var reload: Boolean = false
         when (item.itemId){
-            R.id.mnuFree ->
+            R.id.mnuFree -> {
+                if(!currList.equals("topfreeapplications")){
+                    reload = true
+                }
                 currList = "topfreeapplications"
-            R.id.mnuPaid ->
+            }
+            R.id.mnuPaid -> {
+                if(!currList.equals("toppaidapplications")){
+                    reload = true
+                }
                 currList = "toppaidapplications"
-            R.id.mnuSongs ->
+            }
+
+            R.id.mnuSongs -> {
+                if(!currList.equals("topsongs")){
+                    reload = true
+                }
                 currList = "topsongs"
+            }
             R.id.mnu10, R.id.mnu25 -> {
                 if(!item.isChecked){
                     item.isChecked = true
+                    reload = true
                     feedLimit = 35  - feedLimit
                     Log.d(TAG, "onOptionsItemSelected: ${item.title} setting feedLimit to $feedLimit")
                 }else{
@@ -68,8 +90,23 @@ class MainActivity : AppCompatActivity() {
             else ->
                 return super.onOptionsItemSelected(item)
         }
-        downloadUrl(feedUrl.format(currList,feedLimit))
+        if(reload) {
+            downloadUrl(feedUrl.format(currList, feedLimit))
+        }
         return true
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(CURR_LIST, currList)
+        outState.putInt(FEED_LIMIT, feedLimit)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        feedLimit = savedInstanceState.getInt(FEED_LIMIT)
+        currList = savedInstanceState.getString(CURR_LIST, "topfreeapplications")
     }
 
     override fun onDestroy() {
