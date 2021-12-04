@@ -18,31 +18,37 @@ class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
     private var downloadData: DownloadData? = null
-    private var feedUrl: String = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/%s/limit=%d/xml"
-    private var currList: String = "topfreeapplications"
+    private var feedUrl: String = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml"
     private var feedLimit = 10
+    private var feedCachedUrl = "INVALIDATED"
+
     private val CURR_LIST = "curr_list"
     private val FEED_LIMIT = "feed_limit"
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //Log.d(TAG, "onCreate: done")
-
     }
 
+    //could remove onResume and then load values out of on create instead of on RestoreInstanceState
     override fun onResume() {
         super.onResume()
-        downloadUrl(feedUrl.format(currList,feedLimit))
+        downloadUrl(feedUrl.format(feedLimit))
     }
 
     private fun downloadUrl(feedUrl: String){
-        Log.d(TAG, "downloadUrl starting Asynctask")
-        downloadData = DownloadData(this, xmlListView)
-        downloadData?.execute(feedUrl)
-        Log.d(TAG, "downloadUrl done")
+        if(feedUrl != feedCachedUrl){
+            Log.d(TAG, "downloadUrl starting Asynctask")
+            downloadData = DownloadData(this, xmlListView)
+            downloadData?.execute(feedUrl)
+            feedCachedUrl = feedUrl
+            Log.d(TAG, "downloadUrl done")
+        }else{
+            Log.d(TAG,"dowloadURL - URL not changed")
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -56,57 +62,48 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        var reload: Boolean = false
         when (item.itemId){
             R.id.mnuFree -> {
-                if(!currList.equals("topfreeapplications")){
-                    reload = true
-                }
-                currList = "topfreeapplications"
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml"
             }
             R.id.mnuPaid -> {
-                if(!currList.equals("toppaidapplications")){
-                    reload = true
-                }
-                currList = "toppaidapplications"
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=%d/xml"
             }
-
             R.id.mnuSongs -> {
-                if(!currList.equals("topsongs")){
-                    reload = true
-                }
-                currList = "topsongs"
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=%d/xml"
             }
             R.id.mnu10, R.id.mnu25 -> {
                 if(!item.isChecked){
                     item.isChecked = true
-                    reload = true
                     feedLimit = 35  - feedLimit
                     Log.d(TAG, "onOptionsItemSelected: ${item.title} setting feedLimit to $feedLimit")
                 }else{
                     Log.d(TAG, "onOptionsItemSelected: ${item.title} setting feedLimit unchanged")
                 }
             }
+            R.id.mnuRefresh -> {
+                feedCachedUrl = "INVALIDATED"
+            }
             else ->
                 return super.onOptionsItemSelected(item)
         }
-        if(reload) {
-            downloadUrl(feedUrl.format(currList, feedLimit))
-        }
+
+        downloadUrl(feedUrl.format(feedLimit))
         return true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(CURR_LIST, currList)
+        outState.putString(CURR_LIST, feedUrl)
         outState.putInt(FEED_LIMIT, feedLimit)
+
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
         feedLimit = savedInstanceState.getInt(FEED_LIMIT)
-        currList = savedInstanceState.getString(CURR_LIST, "topfreeapplications")
+        feedUrl = savedInstanceState.getString(CURR_LIST, "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml")
     }
 
     override fun onDestroy() {
